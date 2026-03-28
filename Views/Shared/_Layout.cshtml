@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Hierarchy System</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @if (User.Identity!.IsAuthenticated)
+    {
+        <header>
+            <a href="/" class="logo">Hierarchy System</a>
+            <div class="nav-links">
+                @{
+                    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+                }
+                <a href="@Url.Action("Index", "Item")" class="@(currentController == "Item" && currentAction == "Index" ? "active" : "")">Items</a>
+                <a href="@Url.Action("Dashboard", "Item")" class="@(currentController == "Item" && currentAction == "Dashboard" ? "active" : "")">Dashboard</a>
+                <a href="@Url.Action("Index", "Profile")" class="@(currentController == "Profile" ? "active" : "")">Profile</a>
+                <form method="post" action="@Url.Action("Logout", "Auth")" style="display:inline; margin-left: 1rem;">
+                    <button type="submit" class="btn btn-secondary" style="padding: 0.5rem 1rem;">Logout</button>
+                </form>
+            </div>
+        </header>
+    }
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <script>
+        // Setup simple validation highlights or custom JS here
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

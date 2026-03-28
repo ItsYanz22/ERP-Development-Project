@@ -1,0 +1,21 @@
+@model Item
+
+<div class="tree-node">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <strong>@Model.Name</strong> 
+        <span style="color: var(--text-muted); font-size: 0.9em;">(Weight: @Model.Weight)</span>
+        <span class="badge @(Model.Status == "Processed" ? "badge-processed" : "badge-unprocessed")" style="font-size: 0.75rem;">
+            @Model.Status
+        </span>
+    </div>
+    
+    @if (Model.Children != null && Model.Children.Any())
+    {
+        <div class="children-container" style="margin-top: 0.5rem;">
+            @foreach (var child in Model.Children)
+            {
+                <partial name="_ItemTreeNode" model="child" />
+            }
+        </div>
+    }
+</div>

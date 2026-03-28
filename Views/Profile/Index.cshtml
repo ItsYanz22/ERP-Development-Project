@@ -1,0 +1,61 @@
+@model HierarchicalItemProcessingSystem.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "User Profile";
+}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>User Profile</h1>
+</div>
+
+<div style="display: flex; justify-content: center; align-items: flex-start;">
+    
+    <div class="glass-card" style="width: 100%; max-width: 600px; text-align: center; position: relative; overflow: hidden;">
+
+        <!-- Cool background warm gradient banner for the profile card -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 120px; background: var(--gradient-primary); z-index: 1;"></div>
+        
+        <!-- Avatar Wrapper -->
+        <div style="position: relative; z-index: 2; margin-top: 40px; margin-bottom: 1.5rem;">
+            <div style="width: 150px; height: 150px; border-radius: 50%; background: #fff; margin: 0 auto; padding: 5px; box-shadow: 0 8px 32px 0 rgba(240, 152, 25, 0.2); display: flex; justify-content: center; align-items: center;">
+                <img src="@Model.AvatarUrl" alt="User Avatar" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover;" />
+            </div>
+        </div>
+
+        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; position: relative; z-index: 2;">
+            @Model.DisplayName
+        </h2>
+        <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 2rem; position: relative; z-index: 2;">
+            @Model.Email
+        </p>
+
+        <div style="border-top: 1px solid var(--border-light); padding-top: 1.5rem; margin-bottom: 2rem; text-align: left;">
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                <span style="font-weight: 500;">Account Status</span>
+                <span class="badge badge-processed">@Model.AccountStatus</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                <span style="font-weight: 500;">Role</span>
+                <span style="color: var(--text-muted);">Administrator</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                <span style="font-weight: 500;">Member Since</span>
+                <span style="color: var(--text-muted);">March 2026</span>
+            </div>
+        </div>
+
+        <div style="border-top: 1px dashed var(--border-light); padding-top: 1.5rem; text-align: left;">
+            <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">Update Identity</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                Changing your display name will regenerate your unique avatar!
+            </p>
+            
+            <form asp-action="UpdateName" method="post" style="display: flex; gap: 1rem;">
+                <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                    <input type="text" name="newDisplayName" class="form-control" placeholder="Enter new display name..." required value="@Model.DisplayName" />
+                </div>
+                <button type="submit" class="btn btn-secondary">Update</button>
+            </form>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,181 @@
+@model HierarchicalItemProcessingSystem.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Operations Dashboard";
+}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>Operations Dashboard</h1>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+    
+    <!-- Left Column: Tree View -->
+    <div class="glass-card" style="margin-bottom: 0;">
+        <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Hierarchy Tree</h2>
+        @if (!Model.Tree.Any())
+        {
+            <p style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No items found in the tree.</p>
+        }
+        else
+        {
+            <div class="tree-container">
+                @foreach (var item in Model.Tree)
+                {
+                    <partial name="_ItemTreeNode" model="item" />
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Right Column: Process Form -->
+    <div class="glass-card" style="margin-bottom: 0;">
+        <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Process Item</h2>
+        
+        @if (Model.ParentItems == null || !Model.ParentItems.Any())
+        {
+            <div style="text-align: center; padding: 2rem 1rem;">
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                    You need to have at least one unprocessed input item before you can start processing!
+                </p>
+                <a asp-action="Create" asp-controller="Item" class="btn btn-primary">Create an Input Item</a>
+            </div>
+        }
+        else
+        {
+            <form asp-action="ProcessFromDashboard" method="post" id="processForm">
+                <div asp-validation-summary="ModelOnly" style="color: red; margin-bottom: 1rem;"></div>
+                
+                <div class="form-group">
+                    <label asp-for="ProcessModel.ParentId">Select Parent Item</label>
+                    <select asp-for="ProcessModel.ParentId" class="form-control" id="parentSelect">
+                        <option value="">-- Select Parent Item --</option>
+                        @foreach (var item in Model.ParentItems)
+                        {
+                            <option value="@item.Id" data-weight="@item.Weight">@item.Name (Weight: @item.Weight)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="ProcessModel.ParentId" style="color: red; font-size: 0.85rem;"></span>
+                </div>
+
+                <div class="process-children-list">
+                    <h3 style="font-size: 1.1rem;">Outputs/Children</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                        Total weight of children must not exceed the parent's weight.
+                    </p>
+                    
+                    <div id="childrenContainer">
+                        <!-- If there's an error on postback, recreate child rows -->
+                        @if (Model.ProcessModel?.Children != null)
+                        {
+                            @for(int i=0; i<Model.ProcessModel.Children.Count; i++)
+                            {
+                                <div class="child-row">
+                                    <div class="form-group">
+                                        <input type="text" name="ProcessModel.Children[@i].Name" value="@Model.ProcessModel.Children[i].Name" class="form-control" placeholder="Child Name" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="number" step="0.01" name="ProcessModel.Children[@i].Weight" value="@Model.ProcessModel.Children[i].Weight" class="form-control weight-input" placeholder="Weight" required />
+                                    </div>
+                                    <button type="button" class="btn btn-danger remove-child" style="padding: 0.5rem 1rem;">X</button>
+                                </div>
+                            }
+                        }
+                    </div>
+                    
+                    <button type="button" id="addChildBtn" class="btn btn-secondary" style="margin-top: 1rem; width: 100%;">
+                        + Add Output Item
+                    </button>
+                </div>
+                
+                <div style="margin-top: 2rem; padding-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="flex: 1;">Process Element</button>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let childIndex = @(Model.ProcessModel?.Children?.Count ?? 0);
+        
+        document.getElementById('addChildBtn')?.addEventListener('click', function() {
+            const container = document.getElementById('childrenContainer');
+            const row = document.createElement('div');
+            row.className = 'child-row';
+            
+            row.innerHTML = `
+                <div class="form-group">
+                    <input type="text" name="ProcessModel.Children[${childIndex}].Name" class="form-control" placeholder="Child Name" required />
+                </div>
+                <div class="form-group">
+                    <input type="number" step="0.01" name="ProcessModel.Children[${childIndex}].Weight" class="form-control weight-input" placeholder="Weight" required />
+                </div>
+                <button type="button" class="btn btn-danger remove-child" style="padding: 0.5rem 1rem;">X</button>
+            `;
+            
+            container.appendChild(row);
+            childIndex++;
+            
+            bindRemoveButtons();
+            bindWeightInputs();
+            validateWeights();
+        });
+
+        function bindRemoveButtons() {
+            document.querySelectorAll('.remove-child').forEach(btn => {
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                newBtn.addEventListener('click', function(e) {
+                    e.target.closest('.child-row').remove();
+                    reindexChildren();
+                    validateWeights();
+                });
+            });
+        }
+
+        function bindWeightInputs() {
+            document.querySelectorAll('.weight-input').forEach(input => {
+                input.addEventListener('input', validateWeights);
+            });
+        }
+
+        document.getElementById('parentSelect')?.addEventListener('change', validateWeights);
+
+        function reindexChildren() {
+            const rows = document.querySelectorAll('.child-row');
+            rows.forEach((row, i) => {
+                row.querySelector('input[type="text"]').name = `ProcessModel.Children[${i}].Name`;
+                row.querySelector('input[type="number"]').name = `ProcessModel.Children[${i}].Weight`;
+            });
+            childIndex = rows.length;
+        }
+
+        function validateWeights() {
+            const parentSelect = document.getElementById('parentSelect');
+            if(!parentSelect || !parentSelect.value) return;
+            
+            let parentWeight = parseFloat(parentSelect.options[parentSelect.selectedIndex].getAttribute('data-weight'));
+            
+            let sum = 0;
+            document.querySelectorAll('.weight-input').forEach(input => {
+                if(input.value) sum += parseFloat(input.value);
+            });
+            
+            const submitBtn = document.getElementById('submitBtn');
+            if(!submitBtn) return;
+
+            if(sum > parentWeight || sum === 0 || document.querySelectorAll('.child-row').length === 0) {
+                submitBtn.disabled = true;
+            } else {
+                submitBtn.disabled = false;
+            }
+        }
+
+        // initial bind
+        bindRemoveButtons();
+        bindWeightInputs();
+        validateWeights();
+    </script>
+}

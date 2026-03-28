@@ -1,0 +1,34 @@
+@model ItemViewModel
+@{
+    ViewData["Title"] = "Edit Item";
+}
+
+<h1>Edit Item</h1>
+
+<div class="glass-card" style="max-width: 600px; margin-top: 2rem;">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="ModelOnly" style="color: red; margin-bottom: 1rem;"></div>
+        
+        <div class="form-group">
+            <label asp-for="Name">Item Name</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" style="color: red; font-size: 0.85rem;"></span>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="Weight">Weight</label>
+            <input asp-for="Weight" class="form-control" type="number" step="0.01" />
+            <span asp-validation-for="Weight" style="color: red; font-size: 0.85rem;"></span>
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-primary">Update Item</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
