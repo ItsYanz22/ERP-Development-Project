@@ -1,4 +1,4 @@
-# Hierarchical Item Processing System
+# Hierarchical ERP System
 
 A complete ASP.NET Core MVC assessment project demonstrating advanced hierarchical data architectures, complex business logic validation, and class-leading UI/UX design via custom-built CSS Grid and modern design implementations.
 
