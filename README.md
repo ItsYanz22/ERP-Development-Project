@@ -78,3 +78,10 @@ The console will output the active listener port (typically `http://localhost:51
 
 3. **Identity Customization:**
    Navigate to the **Profile** tab in the global header to interact with the procedural avatar system. Type in an entirely new Display Name string and watch the system generate a unique SVG asset dynamically bound exactly to your input length and characters!
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License. 
+You are free to use, modify, and distribute this software for educational or commercial purposes, provided the original license and copyright notices are included.
